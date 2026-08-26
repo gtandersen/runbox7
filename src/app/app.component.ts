@@ -109,6 +109,7 @@ export class AppComponent implements OnInit, AfterViewInit, CanvasTableSelectLis
   private indexSyncOperationId: string = null;
   private hasCutOverToLocalIndex = false;
   private lastRenderedCommittedMessages = 0;
+  private hasRenderedLocalIndex = false;
 
   indexDocCount = 0;
 
@@ -1064,6 +1065,7 @@ export class AppComponent implements OnInit, AfterViewInit, CanvasTableSelectLis
       this.indexSyncOperationId = state.operationId;
       this.hasCutOverToLocalIndex = false;
       this.lastRenderedCommittedMessages = 0;
+      this.hasRenderedLocalIndex = false;
       this.indexSyncError = null;
     }
     this.indexSyncState = state;
@@ -1123,6 +1125,19 @@ export class AppComponent implements OnInit, AfterViewInit, CanvasTableSelectLis
       case 'cancelled':
         return 'Message synchronization cancelled';
     }
+  }
+
+  public handleLocalIndexQueryFailure(_error: unknown): void {
+    console.error('Unable to query the local message index');
+    this.indexSyncError = 'Unable to display the local message index';
+    if (this.hasRenderedLocalIndex) {
+      return;
+    }
+    this.usewebsocketsearch = true;
+    this.dataReady = false;
+    this.showingSearchResults = false;
+    this.offerInitialLocalIndex = true;
+    this.messagelistservice.fetchFolderMessages();
   }
 
   singleMailViewerClosed(action: string): void {
@@ -1426,11 +1441,14 @@ export class AppComponent implements OnInit, AfterViewInit, CanvasTableSelectLis
           this.searchResultsCount = searchResults.length;
           if (searchResults) {
             this.setMessageDisplay('search', this.searchService, searchResults);
+            this.hasRenderedLocalIndex = true;
             if (!noscroll) {
               this.canvastable.scrollTop();
             }
           }
-        } catch (e) { }
+        } catch (error) {
+          this.handleLocalIndexQueryFailure(error);
+        }
 
       }
     }
