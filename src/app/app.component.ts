@@ -1077,6 +1077,12 @@ export class AppComponent implements OnInit, AfterViewInit, CanvasTableSelectLis
     }
     if (state.phase === 'cancelled') {
       this.offerInitialLocalIndex = false;
+      if (this.hasCutOverToLocalIndex) {
+        this.usewebsocketsearch = true;
+        this.dataReady = false;
+        this.showingSearchResults = false;
+        this.messagelistservice.fetchFolderMessages();
+      }
       return;
     }
     if (state.phase === 'local-index-ready' && !this.hasCutOverToLocalIndex) {
@@ -1130,6 +1136,7 @@ export class AppComponent implements OnInit, AfterViewInit, CanvasTableSelectLis
   public handleLocalIndexQueryFailure(_error: unknown): void {
     console.error('Unable to query the local message index');
     this.indexSyncError = 'Unable to display the local message index';
+    this.searchService?.cancelInitialIndexSynchronization();
     if (this.hasRenderedLocalIndex) {
       return;
     }
