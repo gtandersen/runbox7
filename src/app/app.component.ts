@@ -1075,7 +1075,7 @@ export class AppComponent implements OnInit, AfterViewInit, CanvasTableSelectLis
     this.indexSyncState = state;
 
     if (state.phase === 'failed') {
-      this.indexSyncError = state.error;
+      this.indexSyncError = state.error?.message || null;
       this.offerInitialLocalIndex = !this.hasCutOverToLocalIndex;
       return;
     }
